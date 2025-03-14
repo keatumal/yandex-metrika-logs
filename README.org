@@ -1,0 +1,82 @@
+#+title: Fetching Yandex Metrika Data via Logs API
+
+* Description
+
+This is a simple script that allows you to download non-aggregated Yandex Metrika data via the Logs API and save it in TSV format. You can find the official API documentation [[https://yandex.com/dev/metrika/en/logs/][here]].
+
+* Installation
+
+1. Clone the repository:
+
+   #+begin_src sh
+     git clone https://github.com/keatumal/yandex-metrika-logs.git
+     cd yandex-metrika-logs
+   #+end_src
+
+2. Install dependencies:
+
+   Using Pipenv:
+
+   #+begin_src
+     pipenv install
+   #+end_src
+
+   Or via =pip=:
+
+   #+begin_src
+  pip install -r requirements.txt
+  #+end_src
+
+* Usage
+
+1. Create a ~.env~ file (description below, example in ~.env.example~)
+2. Edit ~config.py~ (optional, description below)
+3. Run the ~get_logs.py~ script
+   1. Via Pipenv
+      #+begin_src
+        pipenv shell
+        python get_logs.py
+      #+end_src
+
+      Or
+
+      #+begin_src
+        pipenv run python get_logs.py
+      #+end_src
+
+   2. Or, if installed via =pip=:
+      #+begin_src
+        python get_logs.py
+      #+end_src
+
+* Command-line arguments
+
+- =-c, --counter-id= (required): Yandex Metrika counter ID.
+- =-f, --from-date= (required): start date to retrieve data from.
+- =-t, --to-date= (required): end date to retrieve data to (inclusive). Cannot be the current day.
+- =-o, --output-file=: name of the TSV file to save the retrieved data. By default, it is in the format =<COUNTER_ID>_<START_DATE>_<END_DATE>.tsv= in the current directory.
+- =-d, --dry-run=: only check the possibility of data retrieval.
+- =-h, --help=: show help message and exit.
+
+* Configuration
+
+It is very simple and is set in the ~.env~ and ~config.py~ files.
+
+** ~.env~
+
+- =YM_AUTH_TOKEN=: OAuth token. How to get it is [[https://yandex.com/dev/metrika/en/intro/authorization][described by Yandex]].
+
+** ~config.py~
+
+- =WAIT_INTERVAL=: this is the interval in seconds between checks for report readiness.
+- =FIELDS_MAP=: Fields that we request in the report. The key (before the colon) is the field name for the API, and the value (after the colon) is its final name in the file.
+
+  By default, it currently contains a large list of fields for user visits. Additional ones can be found in the [[https://yandex.com/dev/metrika/en/logs/fields/hits][documentation]].
+
+* License
+
+This project is distributed under the MIT License. See the LICENSE file for details.
+
+* Contacts
+
+If you have any questions or suggestions, contact me via Telegram: https://t.me/anakvad

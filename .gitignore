@@ -1,0 +1,15 @@
+# Environment variables file
+.env
+
+# Virtual environment created by Pipenv
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Emacs
+.#*
+\#*
+*~
