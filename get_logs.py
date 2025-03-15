@@ -10,11 +10,17 @@ from tapi_yandex_metrika import YandexMetrikaLogsapi
 
 from config import WAIT_INTERVAL, FIELDS_MAP
 
-def validate_iso_date(date_str):
+
+def validate_iso_date(date_str: str):
     iso_format_regex = r"^\d{4}-\d{2}-\d{2}$"
     if not re.match(iso_format_regex, date_str):
         raise argparse.ArgumentTypeError(f"Invalid date format: '{date_str}'. Expected format: YYYY-MM-DD")
     return date_str
+
+def fprint(line: str, **kwargs):
+    print(' ' * 100, end='\r')
+    print(line, end='\r', flush=True, **kwargs)
+
 
 arg_parser = argparse.ArgumentParser(description='Downloads Yandex Metrika logs and saves them in TSV format.')
 arg_parser.add_argument('-c', '--counter-id', type=int, required=True, help='YM counter ID')
@@ -88,18 +94,20 @@ parts_len = len(parts)
 print("Number of parts in the report: ", parts_len)
 
 for part_num, part_info in enumerate(parts, start=1):
-    print(f'\rPart {part_num}/{parts_len}: downloading', end=' '*10, flush=True)
+    fprint(f'Part {part_num}/{parts_len}: downloading')
     part_orig_num = part_info['part_number']
     part = client.download(requestId=request_id, partNumber=part_orig_num).get()
-    print(f'\rPart {part_num}/{parts_len}: converting', end=' '*10, flush=True)
+    fprint(f'Part {part_num}/{parts_len}: converting')
     part_dict = part().to_dicts()
     df = pd.DataFrame(part_dict, columns=FIELDS_MAP.keys())
     df.rename(columns=FIELDS_MAP, inplace=True)
-    print(f'\rPart {part_num}/{parts_len}: saving', end=' '*10, flush=True)
+    fprint(f'Part {part_num}/{parts_len}: saving')
     if part_num == 1:
         df.to_csv(output_fname, sep='\t', index=False, header=True, mode='w')
     else:
         df.to_csv(output_fname, sep='\t', index=False, header=False, mode='a')
+
+    fprint(f'Part {part_num}/{parts_len}: done')
     print()
 
-print('\nDone')
+print('Done')
