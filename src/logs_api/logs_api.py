@@ -8,6 +8,11 @@ class ReportCheckResult:
     success: bool
     error: Exception | None = None
 
+@dataclass
+class ReportDeleteResult:
+    success: bool
+    error: Exception | None = None
+
 class LogsAPI():
 
     def __init__(
@@ -63,3 +68,10 @@ class LogsAPI():
     
     def download_report_part(self, request_id: int, part_num: int):
         return self.client.download(requestId=request_id, partNumber=part_num).get()
+    
+    def delete_report(self, request_id: int):
+        try:
+            self.client.clean(requestId=request_id).post()
+            return ReportDeleteResult(True)
+        except Exception as e:
+            return ReportDeleteResult(False, e)
