@@ -1,5 +1,6 @@
-# Environment variables file
+# Configuration
 .env
+src/config.py
 
 # Virtual environment created by Pipenv
 .venv/
