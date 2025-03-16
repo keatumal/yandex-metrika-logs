@@ -7,8 +7,10 @@ import argparse
 import pandas as pd
 from dotenv import load_dotenv
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from config import WAIT_INTERVAL, FIELDS_MAP
-from src.logs_api.logs_api import LogsAPI, ReportCheckResult
+from logs_api.logs_api import LogsAPI, ReportCheckResult
 
 
 def validate_iso_date(date_str: str):

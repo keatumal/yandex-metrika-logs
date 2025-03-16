@@ -30,23 +30,23 @@
 *  Использование
 
 1. Создайте ~.env~ (описание ниже, пример в ~.env.example~)
-2. Отредактируйте ~config.py~ (опционально, описание ниже)
-3. Запустите скрипт ~get_logs.py~
+2. Отредактируйте ~src/config.py~ (опционально, описание ниже)
+3. Запустите скрипт ~src/scripts/download_logs.py~
    1. Через Pipenv
       #+begin_src
         pipenv shell
-        python get_logs.py
+        python src/scripts/download_logs.py
       #+end_src
 
       Или
 
       #+begin_src
-        pipenv run python get_logs.py
+        pipenv run python src/scripts/download_logs.py
       #+end_src
 
    2. Или, если устанавливали через =pip=:
       #+begin_src
-        python get_logs.py
+        python src/scripts/download_logs.py
       #+end_src
 
 * Аргументы командной строки
