@@ -2,6 +2,7 @@
 WAIT_INTERVAL = 10
 
 # https://yandex.com/dev/metrika/en/logs/fields/visits
+# https://yandex.com/dev/metrika/en/logs/fields/hits
 FIELDS_MAP = {
     'ym:s:visitID': 'visitID',
     'ym:s:date': 'date',
