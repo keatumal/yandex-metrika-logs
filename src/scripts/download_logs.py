@@ -25,17 +25,26 @@ def fprint(line: str, **kwargs):
     print(' ' * 100, end='\r')
     print(line, end='\r', flush=True, **kwargs)
 
+def validate_args(args):
+    if args.report_id is not None and (args.from_date is not None or args.to_date is not None):
+        print('Error: you cannot use -r at the same time as -f and -t')
+        sys.exit(1)
+    if args.report_id is None and (args.from_date is None or args.to_date is None):
+        print('Error: you must specify either -r or both -f and -t.')
+        sys.exit(1)
 
-arg_parser = argparse.ArgumentParser(description='Downloads Yandex Metrika logs and saves them in TSV format.')
+arg_parser = argparse.ArgumentParser(description='Downloads Yandex Metrika logs and saves them in TSV format')
 arg_parser.add_argument('-c', '--counter-id', type=int, required=True, help='YM counter ID')
-arg_parser.add_argument('-f', '--from-date', type=validate_iso_date, required=True,
+arg_parser.add_argument('-r', '--report-id', type=int, help='download a ready-made report with ID')
+arg_parser.add_argument('-f', '--from-date', type=validate_iso_date,
                         help='start date in ISO format (YYYY-MM-DD)')
-arg_parser.add_argument('-t', '--to-date', type=validate_iso_date, required=True,
+arg_parser.add_argument('-t', '--to-date', type=validate_iso_date,
                         help='end date in ISO format (YYYY-MM-DD)')
 arg_parser.add_argument('-o', '--output-file', type=str, help='output file name')
 arg_parser.add_argument('-d', '--dry-run', action='store_true',
                         help='only to check if the report can be created')
 args = arg_parser.parse_args()
+validate_args(args)
 
 load_dotenv()
 AUTH_TOKEN = os.getenv('YM_AUTH_TOKEN')
@@ -53,40 +62,58 @@ if os.path.exists(output_fname):
 YM_FIELDS = ','.join(FIELDS_MAP.keys())
 DF_COLUMNS = FIELDS_MAP.values()
 
-ym = LogsAPI(
-    fields=YM_FIELDS,
-    auth_token=AUTH_TOKEN,
-    counter_id=args.counter_id,
-    start_date=args.from_date,
-    end_date=args.to_date,
-)
+if not args.report_id:
+    ym = LogsAPI(
+        fields=YM_FIELDS,
+        auth_token=AUTH_TOKEN,
+        counter_id=args.counter_id,
+        start_date=args.from_date,
+        end_date=args.to_date,
+    )
+    if args.dry_run:
+        result: OperationResult = ym.check_reporting_capability()
+        if result.success:
+            print('Yes, a report can be created.')
+            exit(0)
+        else:
+            print(f'The report cannot be created. Error:\n\n{result.error}\n')
+            exit(1)
 
-if args.dry_run:
-    result: OperationResult = ym.check_reporting_capability()
-    if result.success:
-        print('Yes, a report can be created.')
-        exit(0)
-    else:
-        print(f'The report cannot be created. Error:\n\n{result.error}\n')
+    print('Ordering report…')
+    request_id = ym.create_report()
+else:
+    ym = LogsAPI(
+        auth_token=AUTH_TOKEN,
+        counter_id=args.counter_id
+    )
+    request_id = args.report_id
+
+    try:
+        info = ym.get_report_info(request_id)
+    except Exception as e:
+        print(f'It appears that report #{request_id} does not exist. '
+              f'An error occurred while retrieving information about it:\n\n{e}\n')
         exit(1)
 
-print('Ordering report…')
-request_id = ym.create_report()
+    start_date = info['log_request']['date1']
+    end_date = info['log_request']['date2']
+    output_fname = args.output_file or f'{args.counter_id}_{start_date}_{end_date}.tsv'
 
-wait_counter: int = 1
+wait_counter: int = 0
 
 while True:
     if ym.is_report_ready(request_id):
         break
     else:
-        elapsed_time = (wait_counter - 1) * WAIT_INTERVAL
+        elapsed_time = wait_counter * WAIT_INTERVAL
         elapsed_time = dt.timedelta(seconds=elapsed_time)
         elapsed_time = naturaldelta(elapsed_time)
         fprint(f"Waiting for report. It's been {elapsed_time}…")
         wait_counter += 1
         time.sleep(WAIT_INTERVAL)
 
-print()
+if wait_counter > 0:
+    print()
 
 report_info = ym.get_report_info(request_id)
 parts = report_info['log_request']['parts']
