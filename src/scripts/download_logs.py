@@ -7,7 +7,7 @@ import datetime as dt
 
 import pandas as pd
 from dotenv import load_dotenv
-from humanize import naturaldelta
+from humanize import naturaldelta, naturalsize
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -119,7 +119,9 @@ if wait_counter > 0:
 report_info = ym.get_report_info(request_id)
 parts = report_info['log_request']['parts']
 parts_len = len(parts)
-print("Number of parts in the report: ", parts_len)
+report_size = report_info['log_request']['size']
+print('Number of parts in the report:', parts_len)
+print('Report size:', naturalsize(report_size, binary=True))
 
 for part_num, part_info in enumerate(parts, start=1):
     fprint(f'Part {part_num}/{parts_len}: downloading')
