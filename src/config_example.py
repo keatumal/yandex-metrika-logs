@@ -1,6 +1,11 @@
 # Report readiness check interval (seconds)
 WAIT_INTERVAL = 10
 
+# FIRST, LAST, LASTSIGN, LAST_YANDEX_DIRECT_CLICK, CROSS_DEVICE_LAST_SIGNIFICANT,
+# CROSS_DEVICE_FIRST, CROSS_DEVICE_LAST_YANDEX_DIRECT_CLICK, CROSS_DEVICE_LAST,
+# AUTOMATIC
+ATTRIBUTION_MODEL = 'LASTSIGN'
+
 # https://yandex.com/dev/metrika/en/logs/fields/visits
 # https://yandex.com/dev/metrika/en/logs/fields/hits
 FIELDS_MAP = {

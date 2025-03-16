@@ -11,7 +11,7 @@ from humanize import naturaldelta
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from config import WAIT_INTERVAL, FIELDS_MAP
+from config import WAIT_INTERVAL, ATTRIBUTION_MODEL, FIELDS_MAP
 from logs_api.logs_api import LogsAPI, OperationResult
 
 
@@ -69,6 +69,7 @@ if not args.report_id:
         counter_id=args.counter_id,
         start_date=args.from_date,
         end_date=args.to_date,
+        attribution=ATTRIBUTION_MODEL,
     )
     if args.dry_run:
         result: OperationResult = ym.check_reporting_capability()

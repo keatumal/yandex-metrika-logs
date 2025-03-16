@@ -18,6 +18,7 @@ class LogsAPI():
             start_date: str | None = None,
             end_date: str | None = None,
             source: str | list[str] = ['visits', 'hits'],
+            attribution: str = 'LASTSIGN',
             params: dict[str, Any] = {}
     ):
         self.client = YandexMetrikaLogsapi(
@@ -27,6 +28,7 @@ class LogsAPI():
 
         self.params = {
             'source': source,
+            'attribution': attribution,
         }
         
         if fields and len(fields) > 0:
