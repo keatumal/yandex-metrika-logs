@@ -6,9 +6,9 @@ import argparse
 
 import pandas as pd
 from dotenv import load_dotenv
-from tapi_yandex_metrika import YandexMetrikaLogsapi
 
 from config import WAIT_INTERVAL, FIELDS_MAP
+from src.logs_api.logs_api import LogsAPI, ReportCheckResult
 
 
 def validate_iso_date(date_str: str):
@@ -49,54 +49,47 @@ if os.path.exists(output_fname):
 YM_FIELDS = ','.join(FIELDS_MAP.keys())
 DF_COLUMNS = FIELDS_MAP.values()
 
-client = YandexMetrikaLogsapi(
-    access_token=AUTH_TOKEN,
-    default_url_params={'counterId': args.counter_id},
+ym = LogsAPI(
+    fields=YM_FIELDS,
+    auth_token=AUTH_TOKEN,
+    counter_id=args.counter_id,
+    start_date=args.from_date,
+    end_date=args.to_date,
 )
 
-params = {
-    "fields": YM_FIELDS,
-    "source": "visits",
-    "date1": args.from_date,
-    "date2": args.to_date,
-}
-
-# Check the possibility of creating a report
-try:
-    client.evaluate().get(params=params)
-except Exception as e:
-    print(f"There's no way to create a report. YM says:\n\n{e}", file=sys.stderr)
-    exit(1)
-
 if args.dry_run:
-    print('Yes, a report can be created')
-    exit(0)
-
+    result: ReportCheckResult = ym.check_reporting_capability()
+    if result.success:
+        print('Yes, a report can be created.')
+        exit(0)
+    else:
+        print(f'The report cannot be created. Error:\n\n{result.error}\n')
+        exit(1)
 
 print('Ordering report…')
-result = client.create().post(params=params)
-request_id = result["log_request"]["request_id"]
+request_id = ym.create_report()
 
 wait_counter: int = 1
 
 while True:
-    info = client.info(requestId=request_id).get()
-    if info["log_request"]["status"] == "processed":
+    if ym.is_report_ready(request_id):
         break
     else:
-        print(f"\rWaiting for report. It's been {(wait_counter-1) * WAIT_INTERVAL} seconds…", end='', flush=True)
+        fprint(f"Waiting for report. It's been {(wait_counter-1) * WAIT_INTERVAL} seconds…")
         wait_counter += 1
         time.sleep(WAIT_INTERVAL)
 
 print()
-parts = info["log_request"]["parts"]
+
+report_info = ym.get_report_info(request_id)
+parts = report_info['log_request']['parts']
 parts_len = len(parts)
 print("Number of parts in the report: ", parts_len)
 
 for part_num, part_info in enumerate(parts, start=1):
     fprint(f'Part {part_num}/{parts_len}: downloading')
     part_orig_num = part_info['part_number']
-    part = client.download(requestId=request_id, partNumber=part_orig_num).get()
+    part = ym.download_report_part(request_id, part_orig_num)
     fprint(f'Part {part_num}/{parts_len}: converting')
     part_dict = part().to_dicts()
     df = pd.DataFrame(part_dict, columns=FIELDS_MAP.keys())
