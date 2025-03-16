@@ -12,7 +12,7 @@ from humanize import naturaldelta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from config import WAIT_INTERVAL, FIELDS_MAP
-from logs_api.logs_api import LogsAPI, ReportCheckResult
+from logs_api.logs_api import LogsAPI, OperationResult
 
 
 def validate_iso_date(date_str: str):
@@ -62,7 +62,7 @@ ym = LogsAPI(
 )
 
 if args.dry_run:
-    result: ReportCheckResult = ym.check_reporting_capability()
+    result: OperationResult = ym.check_reporting_capability()
     if result.success:
         print('Yes, a report can be created.')
         exit(0)

@@ -4,12 +4,7 @@ from dataclasses import dataclass
 from tapi_yandex_metrika import YandexMetrikaLogsapi
 
 @dataclass
-class ReportCheckResult:
-    success: bool
-    error: Exception | None = None
-
-@dataclass
-class ReportDeleteResult:
+class OperationResult:
     success: bool
     error: Exception | None = None
 
@@ -49,12 +44,12 @@ class LogsAPI():
 
         return request_id
 
-    def check_reporting_capability(self, params: dict[str, Any] = {}) -> tuple[bool, Exception | None]:
+    def check_reporting_capability(self, params: dict[str, Any] = {}) -> OperationResult:
         try:
             self.client.evaluate().get(params=self.params | params)
-            return ReportCheckResult(True)
+            return OperationResult(True)
         except Exception as e:
-            return ReportCheckResult(False, e)
+            return OperationResult(False, e)
 
     def get_report_info(self, request_id: int):
         return self.client.info(requestId=request_id).get()
@@ -69,9 +64,9 @@ class LogsAPI():
     def download_report_part(self, request_id: int, part_num: int):
         return self.client.download(requestId=request_id, partNumber=part_num).get()
     
-    def delete_report(self, request_id: int):
+    def delete_report(self, request_id: int) -> OperationResult:
         try:
             self.client.clean(requestId=request_id).post()
-            return ReportDeleteResult(True)
+            return OperationResult(True)
         except Exception as e:
-            return ReportDeleteResult(False, e)
+            return OperationResult(False, e)

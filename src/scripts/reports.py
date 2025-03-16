@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from logs_api.logs_api import LogsAPI, ReportDeleteResult
+from logs_api.logs_api import LogsAPI, OperationResult
 
 arg_parser = argparse.ArgumentParser(description='')
 arg_parser.add_argument('-c', '--counter-id', type=int, required=True, help='YM counter ID')
@@ -60,7 +60,7 @@ if args.list:
 
 if args.delete:
     report_id = args.delete
-    result: ReportDeleteResult = ym.delete_report(report_id)
+    result: OperationResult = ym.delete_report(report_id)
     if result.success:
         print(f'Report #{report_id} has been successfully deleted')
     else:
@@ -79,7 +79,7 @@ if args.delete_all:
     for report in reports:
         report_id = report['request_id']
         print(f'Deleting report #{report_id}… ', end='', flush=True)
-        result: ReportDeleteResult = ym.delete_report(report_id)
+        result: OperationResult = ym.delete_report(report_id)
         if result.success:
             print('ok\n')
         else:
