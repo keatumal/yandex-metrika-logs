@@ -3,9 +3,11 @@ import os
 import re
 import sys
 import argparse
+import datetime as dt
 
 import pandas as pd
 from dotenv import load_dotenv
+from humanize import naturaldelta
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -77,7 +79,10 @@ while True:
     if ym.is_report_ready(request_id):
         break
     else:
-        fprint(f"Waiting for report. It's been {(wait_counter-1) * WAIT_INTERVAL} seconds…")
+        elapsed_time = (wait_counter - 1) * WAIT_INTERVAL
+        elapsed_time = dt.timedelta(seconds=elapsed_time)
+        elapsed_time = naturaldelta(elapsed_time)
+        fprint(f"Waiting for report. It's been {elapsed_time}…")
         wait_counter += 1
         time.sleep(WAIT_INTERVAL)
 
@@ -103,6 +108,6 @@ for part_num, part_info in enumerate(parts, start=1):
         df.to_csv(output_fname, sep='\t', index=False, header=False, mode='a')
 
     fprint(f'Part {part_num}/{parts_len}: done')
-    print()
 
-print('Done')
+print()
+print(f'The report is saved in {output_fname}')

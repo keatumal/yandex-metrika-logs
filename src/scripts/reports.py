@@ -81,6 +81,6 @@ if args.delete_all:
         print(f'Deleting report #{report_id}… ', end='', flush=True)
         result: ReportDeleteResult = ym.delete_report(report_id)
         if result.success:
-            print('DONE\n')
+            print('ok\n')
         else:
             print(f'FAILED. Error:\n{result.error}\n')
