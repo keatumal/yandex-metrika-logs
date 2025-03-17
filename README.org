@@ -1,8 +1,8 @@
-#+title: Fetching Yandex Metrika Data via Logs API
+#+title: Toolkit for working with Yandex Metrika data via Logs API
 
 * Description
 
-This is a simple script that allows you to download non-aggregated Yandex Metrika data via the Logs API and save it in TSV format. You can find the official API documentation [[https://yandex.com/dev/metrika/en/logs/][here]].
+Toolkit for working with non-aggregated Yandex Metrika data via Logs API. Official API documentation is available [[https://yandex.com/dev/metrika/en/logs/][here]].
 
 * Installation
 
@@ -15,67 +15,69 @@ This is a simple script that allows you to download non-aggregated Yandex Metrik
 
 2. Install dependencies:
 
-   Using Pipenv:
+   Using [[https://github.com/astral-sh/uv][uv]]:
 
-   #+begin_src
-     pipenv install
+   #+begin_src sh
+     uv sync
    #+end_src
 
    Or via =pip=:
 
-   #+begin_src
+   #+begin_src sh
   pip install -r requirements.txt
   #+end_src
 
 * Usage
 
-1. Create a ~.env~ file (description below, example in ~.env.example~)
-2. Edit ~src/config.py~ (optional, description below)
-3. Run the ~src/scripts/download_logs.py~ script
-   1. Via Pipenv
-      #+begin_src
-        pipenv shell
-        python src/scripts/download_logs.py
+1. Create ~.env~ (description below, example in ~.env.example~)
+2. Create ~src/config.py~ (description below, example in ~src/config_example.py~)
+3. Run the required script:
+
+   Via =uv=:
+
+      #+begin_src sh
+        uv run src/scripts/<script_name.py>
       #+end_src
 
-      Or
+   Or, if installed via =pip=:
+   
+     #+begin_src
+     python src/scripts/<script_name.py>
+     #+end_src
 
-      #+begin_src
-        pipenv run python src/scripts/download_logs.py
-      #+end_src
+* Scripts
 
-   2. Or, if installed via =pip=:
-      #+begin_src
-        python src/scripts/download_logs.py
-      #+end_src
+Located in the ~src/scripts~ directory and can be run from anywhere. Each script has help on arguments and usage via =-h, --help=.
 
-* Command-line arguments
+** =download_logs.py=
 
-- =-c, --counter-id= (required): Yandex Metrika counter ID.
-- =-f, --from-date= (required): start date to retrieve data from.
-- =-t, --to-date= (required): end date to retrieve data to (inclusive). Cannot be the current day.
-- =-o, --output-file=: name of the TSV file to save the retrieved data. By default, it is in the format =<COUNTER_ID>_<START_DATE>_<END_DATE>.tsv= in the current directory.
-- =-d, --dry-run=: only check the possibility of data retrieval.
-- =-h, --help=: show help message and exit.
+Allows you to request and/or download reports. Reports cannot be requested for the current day or for a period longer than a year.
+
+** =reports.py=
+
+Allows you to display a list of ready reports and delete them. The script *does not request* confirmation for deletion.
 
 * Configuration
 
-It is very simple and is set in the ~.env~ and ~config.py~ files.
+Is set in the ~.env~ and ~src/config.py~ files.
 
 ** ~.env~
 
 - =YM_AUTH_TOKEN=: OAuth token. How to get it is [[https://yandex.com/dev/metrika/en/intro/authorization][described by Yandex]].
 
-** ~config.py~
+** ~src/config.py~
+
+All parameters listed below are required, default values are not currently provided.
 
 - =WAIT_INTERVAL=: this is the interval in seconds between checks for report readiness.
+- =ATTRIBUTION_MODEL=: default attribution model. A list of possible values can be viewed, for example, [[https://yandex.ru/dev/metrika/en/logs/openapi/getLogRequests][here]].
 - =FIELDS_MAP=: Fields that we request in the report. The key (before the colon) is the field name for the API, and the value (after the colon) is its final name in the file.
 
   By default, it currently contains a large list of fields for user visits. Additional ones can be found in the [[https://yandex.com/dev/metrika/en/logs/fields/hits][documentation]].
 
 * License
 
-This project is distributed under the MIT License. See the LICENSE file for details.
+This project is distributed under the MIT license. See the LICENSE file for details.
 
 * Contacts
 
