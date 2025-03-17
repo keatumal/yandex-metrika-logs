@@ -1,0 +1,29 @@
+[project]
+name = "yandex-metrika-logs"
+version = "0.1.0"
+description = "Working with Yandex Metrika reports via Logs API"
+readme = "README.org"
+requires-python = ">=3.11"
+dependencies = [
+    "humanize>=4.12.1",
+    "pandas>=2.2.3",
+    "python-dotenv>=1.0.1",
+    "tabulate>=0.9.0",
+    "tapi-yandex-metrika>=2022.4.8",
+]
+
+[tool.flake8]
+max-line-length = 120
+
+[tool.black]
+line-length = 120
+
+[dependency-groups]
+dev = [
+    "autopep8>=2.3.2",
+    "black>=25.1.0",
+    "flake8>=7.1.2",
+    "jedi>=0.19.2",
+    "rope>=1.13.0",
+    "yapf>=0.43.0",
+]

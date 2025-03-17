@@ -2,7 +2,7 @@
 .env
 src/config.py
 
-# Virtual environment created by Pipenv
+# Virtual environment
 .venv/
 
 # Byte-compiled / optimized / DLL files
