@@ -11,7 +11,14 @@ from humanize import naturaldelta, naturalsize
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import WAIT_INTERVAL, ATTRIBUTION_MODEL, FIELDS_MAP
+from config import (
+    WAIT_INTERVAL,
+    ATTRIBUTION_MODEL,
+    DOWNLOAD_FIELDS,
+    DOWNLOAD_SOURCE,
+    VISITS_FIELDS_MAPPING,
+    EVENT_FIELDS_MAPPING,
+)
 from logs_api.logs_api import LogsAPI, OperationResult
 
 
@@ -86,17 +93,31 @@ if os.path.exists(output_fname):
     exit(1)
 
 
-YM_FIELDS = ",".join(FIELDS_MAP.keys())
-DF_COLUMNS = FIELDS_MAP.values()
+if DOWNLOAD_SOURCE == "visits":
+    renaming_map = VISITS_FIELDS_MAPPING
+elif DOWNLOAD_SOURCE == "hits":
+    renaming_map = EVENT_FIELDS_MAPPING
+else:
+    print("DOWNLOAD_SOURCE should be `visits` or `hits`", file=sys.stderr)
+    exit(1)
+
+df_columns = []
+for field in DOWNLOAD_FIELDS:
+    if field in renaming_map:
+        df_columns.append(renaming_map[field])
+    else:
+        print(f"Field `{field}` of DOWNLOAD_FIELDS is not available for renaming")
+        exit(1)
 
 if not args.report_id:
     ym = LogsAPI(
-        fields=YM_FIELDS,
+        fields=DOWNLOAD_FIELDS,
         auth_token=AUTH_TOKEN,
         counter_id=args.counter_id,
         start_date=args.from_date,
         end_date=args.to_date,
         attribution=ATTRIBUTION_MODEL,
+        source=DOWNLOAD_SOURCE,
     )
     if args.dry_run:
         result: OperationResult = ym.check_reporting_capability()
@@ -155,8 +176,8 @@ for part_num, part_info in enumerate(parts, start=1):
     part = ym.download_report_part(request_id, part_orig_num)
     fprint(f"Part {part_num}/{parts_len}: converting")
     part_dict = part().to_dicts()
-    df = pd.DataFrame(part_dict, columns=FIELDS_MAP.keys())
-    df.rename(columns=FIELDS_MAP, inplace=True)
+    df = pd.DataFrame(part_dict, columns=DOWNLOAD_FIELDS)
+    df.rename(columns=dict(zip(DOWNLOAD_FIELDS, df_columns)), inplace=True)
     fprint(f"Part {part_num}/{parts_len}: saving")
     if part_num == 1:
         df.to_csv(output_fname, sep="\t", index=False, header=True, mode="w")
