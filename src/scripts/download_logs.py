@@ -13,7 +13,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import (
     WAIT_INTERVAL,
-    ATTRIBUTION_MODEL,
+    DEFAULT_ATTRIBUTION_MODEL,
+    ATTRIBUTION_MAPPING,
     DOWNLOAD_FIELDS,
     DOWNLOAD_SOURCE,
     VISITS_FIELDS_MAPPING,
@@ -101,6 +102,17 @@ else:
     print("DOWNLOAD_SOURCE should be `visits` or `hits`", file=sys.stderr)
     exit(1)
 
+if DEFAULT_ATTRIBUTION_MODEL not in ATTRIBUTION_MAPPING.keys():
+    print(
+        f"`DEFAULT_ATTRIBUTION_MODEL` must be one of: {', '.join(ATTRIBUTION_MAPPING.keys())}",
+        file=sys.stderr,
+    )
+    exit(1)
+
+DOWNLOAD_FIELDS = [
+    f.replace("<attr>", DEFAULT_ATTRIBUTION_MODEL) for f in DOWNLOAD_FIELDS
+]
+
 df_columns = []
 for field in DOWNLOAD_FIELDS:
     if field in renaming_map:
@@ -116,7 +128,6 @@ if not args.report_id:
         counter_id=args.counter_id,
         start_date=args.from_date,
         end_date=args.to_date,
-        attribution=ATTRIBUTION_MODEL,
         source=DOWNLOAD_SOURCE,
     )
     if args.dry_run:
