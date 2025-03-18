@@ -5,6 +5,7 @@ description = "Working with Yandex Metrika reports via Logs API"
 readme = "README.org"
 requires-python = ">=3.11"
 dependencies = [
+    "clickhouse-connect>=0.8.15",
     "humanize>=4.12.1",
     "pandas>=2.2.3",
     "python-dotenv>=1.0.1",

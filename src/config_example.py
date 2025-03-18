@@ -81,8 +81,106 @@ DOWNLOAD_FIELDS = [
     "ym:s:javascriptEnabled",
 ]
 
+CLICKHOUSE_VISITS_FIELDS = DOWNLOAD_FIELDS
+
+CLICKHOUSE_EVENTS_FIELDS = [
+    "ym:pv:watchID",
+    "ym:pv:pageViewID",
+    "ym:pv:clientID",
+    "ym:pv:date",
+    "ym:pv:dateTime",
+    "ym:pv:title",
+    "ym:pv:goalsID",
+    "ym:pv:URL",
+    "ym:pv:referer",
+    "ym:pv:UTMCampaign",
+    "ym:pv:UTMContent",
+    "ym:pv:UTMMedium",
+    "ym:pv:UTMSource",
+    "ym:pv:UTMTerm",
+    "ym:pv:operatingSystem",
+    "ym:pv:hasGCLID",
+    "ym:pv:GCLID",
+    "ym:pv:lastTrafficSource",
+    "ym:pv:lastSearchEngineRoot",
+    "ym:pv:lastSearchEngine",
+    "ym:pv:lastAdvEngine",
+    "ym:pv:lastSocialNetwork",
+    "ym:pv:lastSocialNetworkProfile",
+    "ym:pv:recommendationSystem",
+    "ym:pv:messenger",
+    "ym:pv:browser",
+    "ym:pv:browserMajorVersion",
+    "ym:pv:browserMinorVersion",
+    "ym:pv:browserCountry",
+    "ym:pv:browserEngine",
+    "ym:pv:browserLanguage",
+    "ym:pv:clientTimeZone",
+    "ym:pv:cookieEnabled",
+    "ym:pv:deviceCategory",
+    "ym:pv:javascriptEnabled",
+    "ym:pv:mobilePhone",
+    "ym:pv:mobilePhoneModel",
+    "ym:pv:operatingSystemRoot",
+    "ym:pv:physicalScreenHeight",
+    "ym:pv:physicalScreenWidth",
+    "ym:pv:screenFormat",
+    "ym:pv:screenHeight",
+    "ym:pv:screenOrientation",
+    "ym:pv:screenOrientationName",
+    "ym:pv:screenWidth",
+    "ym:pv:windowClientHeight",
+    "ym:pv:windowClientWidth",
+    "ym:pv:ipAddress",
+    "ym:pv:regionCity",
+    "ym:pv:regionCountry",
+    "ym:pv:regionCityID",
+    "ym:pv:regionCountryID",
+    "ym:pv:isPageView",
+    "ym:pv:isTurboPage",
+    "ym:pv:isTurboApp",
+    "ym:pv:iFrame",
+    "ym:pv:link",
+    "ym:pv:download",
+    "ym:pv:notBounce",
+    "ym:pv:artificial",
+    "ym:pv:ecommerce",
+    "ym:pv:params",
+    "ym:pv:parsedParamsKey1",
+    "ym:pv:parsedParamsKey2",
+    "ym:pv:parsedParamsKey3",
+    "ym:pv:parsedParamsKey4",
+    "ym:pv:parsedParamsKey5",
+    "ym:pv:parsedParamsKey6",
+    "ym:pv:parsedParamsKey7",
+    "ym:pv:parsedParamsKey8",
+    "ym:pv:parsedParamsKey9",
+    "ym:pv:parsedParamsKey10",
+    "ym:pv:httpError",
+    "ym:pv:networkType",
+    "ym:pv:shareService",
+    "ym:pv:shareURL",
+    "ym:pv:shareTitle",
+]
+
+CLICKHOUSE_CREATE_VISITS_TABLE = """
+CREATE TABLE $table_name (
+    $table_fields
+) ENGINE = MergeTree()
+PARTITION BY toYYYYMM(date)
+ORDER BY visitID;
+"""
+
+CLICKHOUSE_CREATE_EVENTS_TABLE = """
+CREATE TABLE $table_name (
+    $table_fields
+) ENGINE = MergeTree()
+PARTITION BY toYYYYMM(date)
+ORDER BY watchID;
+"""
+
 # Dictionary for renaming attribution models
-ATTRIBUTION_MAPPING = {
+ATTRIBUTION_RENAMING_MAPPING = {
     "first": "first",
     "last": "last",
     "lastsign": "lastsign",
@@ -94,8 +192,8 @@ ATTRIBUTION_MAPPING = {
     "automatic": "auto",
 }
 
-# Dictionary for renaming visit fields
-VISITS_FIELDS_MAPPING = {
+#
+FIELDS_RENAMING_MAPPING = {
     "ym:s:visitID": "visitID",
     "ym:s:counterID": "counterID",
     "ym:s:watchIDs": "watchIds",
@@ -272,10 +370,6 @@ VISITS_FIELDS_MAPPING = {
     "ym:s:parsedParamsKey10": "parsedParamsKey10",
     "ym:s:<attr>RecommendationSystem": "<attr>RecommendationSystem",
     "ym:s:<attr>Messenger": "<attr>Messenger",
-}
-
-# Dictionary for renaming events (hits) fields
-EVENT_FIELDS_MAPPING = {
     "ym:pv:watchID": "watchID",
     "ym:pv:pageViewID": "pageViewID",
     "ym:pv:counterID": "counterID",
@@ -370,9 +464,6 @@ EVENT_FIELDS_MAPPING = {
 
 # It's best not to touch it. The code is needed to replace `<attr>` with combinations of
 # all attribution models in renaming dictionaries.
-VISITS_FIELDS_MAPPING = populate_with_attribution(
-    VISITS_FIELDS_MAPPING, ATTRIBUTION_MAPPING
-)
-EVENT_FIELDS_MAPPING = populate_with_attribution(
-    EVENT_FIELDS_MAPPING, ATTRIBUTION_MAPPING
+FIELDS_RENAMING_MAPPING = populate_with_attribution(
+    FIELDS_RENAMING_MAPPING, ATTRIBUTION_RENAMING_MAPPING
 )

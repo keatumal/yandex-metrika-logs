@@ -14,12 +14,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import (
     WAIT_INTERVAL,
     DEFAULT_ATTRIBUTION_MODEL,
-    ATTRIBUTION_MAPPING,
+    ATTRIBUTION_RENAMING_MAPPING,
     DOWNLOAD_FIELDS,
     DOWNLOAD_SOURCE,
-    VISITS_FIELDS_MAPPING,
-    EVENT_FIELDS_MAPPING,
+    FIELDS_RENAMING_MAPPING,
 )
+from utils.utils import fprint
 from logs_api.logs_api import LogsAPI, OperationResult
 
 
@@ -30,11 +30,6 @@ def validate_iso_date(date_str: str):
             f"Invalid date format: '{date_str}'. Expected format: YYYY-MM-DD"
         )
     return date_str
-
-
-def fprint(line: str, **kwargs):
-    print(" " * 100, end="\r")
-    print(line, end="\r", flush=True, **kwargs)
 
 
 def validate_args(args):
@@ -94,36 +89,36 @@ if os.path.exists(output_fname):
     exit(1)
 
 
-if DOWNLOAD_SOURCE == "visits":
-    renaming_map = VISITS_FIELDS_MAPPING
-elif DOWNLOAD_SOURCE == "hits":
-    renaming_map = EVENT_FIELDS_MAPPING
-else:
-    print("DOWNLOAD_SOURCE should be `visits` or `hits`", file=sys.stderr)
-    exit(1)
+# if DOWNLOAD_SOURCE == "visits":
+#     renaming_map = VISITS_FIELDS_MAPPING
+# elif DOWNLOAD_SOURCE == "hits":
+#     renaming_map = EVENT_FIELDS_MAPPING
+# else:
+#     print("DOWNLOAD_SOURCE should be `visits` or `hits`", file=sys.stderr)
+#     exit(1)
 
-if DEFAULT_ATTRIBUTION_MODEL not in ATTRIBUTION_MAPPING.keys():
+if DEFAULT_ATTRIBUTION_MODEL not in ATTRIBUTION_RENAMING_MAPPING.keys():
     print(
-        f"`DEFAULT_ATTRIBUTION_MODEL` must be one of: {', '.join(ATTRIBUTION_MAPPING.keys())}",
+        f"`DEFAULT_ATTRIBUTION_MODEL` must be one of: {', '.join(ATTRIBUTION_RENAMING_MAPPING.keys())}",
         file=sys.stderr,
     )
     exit(1)
 
-DOWNLOAD_FIELDS = [
+report_fields = [
     f.replace("<attr>", DEFAULT_ATTRIBUTION_MODEL) for f in DOWNLOAD_FIELDS
 ]
 
 df_columns = []
-for field in DOWNLOAD_FIELDS:
-    if field in renaming_map:
-        df_columns.append(renaming_map[field])
+for field in report_fields:
+    if field in FIELDS_RENAMING_MAPPING:
+        df_columns.append(FIELDS_RENAMING_MAPPING[field])
     else:
         print(f"Field `{field}` of DOWNLOAD_FIELDS is not available for renaming")
         exit(1)
 
 if not args.report_id:
     ym = LogsAPI(
-        fields=DOWNLOAD_FIELDS,
+        fields=report_fields,
         auth_token=AUTH_TOKEN,
         counter_id=args.counter_id,
         start_date=args.from_date,
@@ -187,8 +182,8 @@ for part_num, part_info in enumerate(parts, start=1):
     part = ym.download_report_part(request_id, part_orig_num)
     fprint(f"Part {part_num}/{parts_len}: converting")
     part_dict = part().to_dicts()
-    df = pd.DataFrame(part_dict, columns=DOWNLOAD_FIELDS)
-    df.rename(columns=dict(zip(DOWNLOAD_FIELDS, df_columns)), inplace=True)
+    df = pd.DataFrame(part_dict, columns=report_fields)
+    df.rename(columns=dict(zip(report_fields, df_columns)), inplace=True)
     fprint(f"Part {part_num}/{parts_len}: saving")
     if part_num == 1:
         df.to_csv(output_fname, sep="\t", index=False, header=True, mode="w")

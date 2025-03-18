@@ -1,3 +1,8 @@
+def fprint(line: str, **kwargs):
+    print("\r" + " " * 80, end="")
+    print("\r" + line, end="", flush=True, **kwargs)
+
+
 def populate_with_attribution(src_map: dict, attr_map: dict) -> dict:
     result = dict()
 
