@@ -64,6 +64,9 @@ arg_parser.add_argument(
     type=validate_iso_date,
     help="end date in ISO format (YYYY-MM-DD)",
 )
+arg_parser.add_argument(
+    "-R", "--dont-rename", action="store_true", help="do not rename field names"
+)
 arg_parser.add_argument("-o", "--output-file", type=str, help="output file name")
 arg_parser.add_argument(
     "-d",
@@ -183,7 +186,8 @@ for part_num, part_info in enumerate(parts, start=1):
     fprint(f"Part {part_num}/{parts_len}: converting")
     part_dict = part().to_dicts()
     df = pd.DataFrame(part_dict, columns=report_fields)
-    df.rename(columns=dict(zip(report_fields, df_columns)), inplace=True)
+    if not args.dont_rename:
+        df.rename(columns=dict(zip(report_fields, df_columns)), inplace=True)
     fprint(f"Part {part_num}/{parts_len}: saving")
     if part_num == 1:
         df.to_csv(output_fname, sep="\t", index=False, header=True, mode="w")

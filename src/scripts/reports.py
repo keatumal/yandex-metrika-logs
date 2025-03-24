@@ -1,10 +1,10 @@
+import argparse
 import os
 import sys
-import argparse
 
+from dotenv import load_dotenv
 from humanize import naturalsize
 from tabulate import tabulate
-from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
