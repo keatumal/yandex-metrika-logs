@@ -13,6 +13,8 @@ DEFAULT_ATTRIBUTION_MODEL = "cross_device_last_significant"
 # visits, hits
 DOWNLOAD_SOURCE = "visits"
 
+CLICKHOUSE_BATCH_SIZE = 10_000
+
 # Lists of available fields:
 #
 # https://yandex.com/dev/metrika/en/logs/fields/visits
@@ -166,7 +168,7 @@ CLICKHOUSE_EVENTS_FIELDS = [
 CLICKHOUSE_CREATE_VISITS_TABLE = """
 CREATE TABLE $table_name (
     $table_fields
-) ENGINE = MergeTree()
+) ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(date)
 ORDER BY visitID;
 """
@@ -174,7 +176,7 @@ ORDER BY visitID;
 CLICKHOUSE_CREATE_EVENTS_TABLE = """
 CREATE TABLE $table_name (
     $table_fields
-) ENGINE = MergeTree()
+) ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(date)
 ORDER BY watchID;
 """
