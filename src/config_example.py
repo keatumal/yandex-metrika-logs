@@ -13,6 +13,7 @@ DEFAULT_ATTRIBUTION_MODEL = "cross_device_last_significant"
 # visits, hits
 DOWNLOAD_SOURCE = "visits"
 
+# The number of rows that are loaded into Clickhouse at a time
 CLICKHOUSE_BATCH_SIZE = 10_000
 
 # Lists of available fields:
@@ -83,6 +84,7 @@ DOWNLOAD_FIELDS = [
     "ym:s:javascriptEnabled",
 ]
 
+# Fields that are contained/created in the Clickhouse table
 CLICKHOUSE_VISITS_FIELDS = DOWNLOAD_FIELDS
 
 CLICKHOUSE_EVENTS_FIELDS = [
@@ -165,6 +167,10 @@ CLICKHOUSE_EVENTS_FIELDS = [
     "ym:pv:shareTitle",
 ]
 
+# A command for creating tables. Substitution:
+#
+# - $table_name: the name of the table passed to the script
+# - $table_fields: the name of the columns that are derived from the variables above
 CLICKHOUSE_CREATE_VISITS_TABLE = """
 CREATE TABLE $table_name (
     $table_fields
@@ -194,7 +200,7 @@ ATTRIBUTION_RENAMING_MAPPING = {
     "automatic": "auto",
 }
 
-#
+# Dictionary for renaming standard field names
 FIELDS_RENAMING_MAPPING = {
     "ym:s:visitID": "visitID",
     "ym:s:counterID": "counterID",

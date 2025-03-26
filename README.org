@@ -49,6 +49,8 @@ Toolkit for working with non-aggregated Yandex Metrika data via Logs API. Offici
 
 Located in the ~src/scripts~ directory and can be run from anywhere. Each script has help on arguments and usage via =-h, --help=.
 
+Scripts have the ability to rename standard field names to more convenient ones. As a rule, the =-R= argument is responsible for this. By default scripts work with original field names.
+
 ** =download_logs.py=
 
 Allows you to request and/or download reports. Reports cannot be requested for the current day or for a period longer than a year.
@@ -57,6 +59,10 @@ Allows you to request and/or download reports. Reports cannot be requested for t
 
 Allows you to display a list of ready reports and delete them. The script *does not request* confirmation for deletion.
 
+** =clickhouse.py=.
+
+Allows you to load data from a TSV file into Clickhouse, and create a new empty table by configuration.
+
 * Configuration
 
 Is set in the ~.env~ and ~src/config.py~ files.
@@ -64,16 +70,30 @@ Is set in the ~.env~ and ~src/config.py~ files.
 ** ~.env~
 
 - =YM_AUTH_TOKEN=: OAuth token. How to get it is [[https://yandex.com/dev/metrika/en/intro/authorization][described by Yandex]].
+- =CLICKHOUSE_{HOST,PORT,USER,PASSWORD}=: configuration for Clickhouse
 
 ** ~src/config.py~
 
 All parameters listed below are required, default values are not currently provided.
 
-- =WAIT_INTERVAL=: this is the interval in seconds between checks for report readiness.
-- =ATTRIBUTION_MODEL=: default attribution model. A list of possible values can be viewed, for example, [[https://yandex.ru/dev/metrika/en/logs/openapi/getLogRequests][here]].
-- =FIELDS_MAP=: Fields that we request in the report. The key (before the colon) is the field name for the API, and the value (after the colon) is its final name in the file.
+- =WAIT_INTERVAL=: this is the interval in seconds between report readiness checks.
+- =DEFAULT_ATTRIBUTION_MODEL=: this is the default attribution model. For a list of possible values, see, for example, [[https://yandex.com/dev/metrika/en/logs/openapi/getLogRequests][here]].
+- =DOWNLOAD_SOURCE=: the data source for the report request: visits (=visits=) or events (=hits=).
+- =CLICKHOUSE_BATCH_SIZE=: how many rows to load into Clickhouse at a time.
+- =DOWNLOAD_FIELDS=: The fields we request in the report to download. The key (before the colon) is the name of the field for the API, and the value (after the colon) is its final name in the file.
 
-  By default, it currently contains a large list of fields for user visits. Additional ones can be found in the [[https://yandex.com/dev/metrika/en/logs/fields/hits][documentation]].
+  By default, it now contains a large list of fields for user visits. More can be found in [[https://yandex.com/dev/metrika/en/logs/fields/hits][documentation]].
+
+  The =<attr>= is replaced by the default attribution model, or that passed to the script.
+
+  For other similar variables in the file, the same rules apply.
+- =CLICKHOUSE_VISITS_FIELDS=, =CLICKHOUSE_EVENTS_FIELDS=: the names of the Clickhouse columns that are contained or will be created in the visits/events tables.
+- =CLICKHOUSE_CREATE_VISITS_TABLE=, =CLICKHOUSE_CREATE_EVENTS_TABLE=: command to create a new visit/event table. The following substitutions are supported:
+
+  - =$table_name=: the table name passed to the script.
+  - =$table_fields=: the name of the table columns, which are derived from the variables =CLICKHOUSE_*_FIELDS=.
+- =ATTRIBUTION_RENAMING_MAPPING=: dictionary to rename the standard attribution model names to more convenient ones. Original name -> new name.
+- =FIELDS_RENAMING_MAPPING=: same thing, only for field names. =<attr>= is replaced by all possible values from =ATTRIBUTION_RENAMING_MAPPING=.
 
 * License
 
